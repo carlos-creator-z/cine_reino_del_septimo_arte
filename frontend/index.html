@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reino del Septimo Arte | Cartelera</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <!-- ============================================================
+         SIDEBAR
+    ============================================================ -->
+    <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+
+      <div class="brand-block">
+        <span class="brand-crown">R</span>
+        <div>
+          <p class="brand-kicker">Dashboard</p>
+          <h1>Reino del <span>Septimo Arte</span></h1>
+        </div>
+      </div>
+
+      <label class="city-field">
+        <span>Usted esta en</span>
+        <select id="citySelect"></select>
+      </label>
+
+      <nav class="nav-list">
+        <a href="#cartelera" class="active">Cartelera</a>
+        <a href="#proximos">Pronto</a>
+        <a href="#comidas">Comidas</a>
+        <a href="#salas">Sala Gold</a>
+        <a href="#club">Cine Club</a>
+        <a href="#promos">Promociones</a>
+      </nav>
+
+      <div class="club-card">
+        <p>Cine Club Gold</p>
+        <strong>2x1 en martes</strong>
+        <span>Renueva tu membresia</span>
+      </div>
+
+      <div class="sidebar-auth" id="sidebarAuth">
+        <button class="sidebar-auth-btn" id="sidebarLoginBtn">Iniciar sesion</button>
+      </div>
+
+    </aside><!-- /sidebar -->
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- ============================================================
+         MAIN CONTENT
+    ============================================================ -->
+    <main class="main-content">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="Abrir menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-title">
+          <p>Ciudad seleccionada</p>
+          <strong id="currentCity">Bogota</strong>
+        </div>
+        <label class="search-box">
+          <span>Buscar</span>
+          <input type="search" id="movieSearch" placeholder="Pelicula, genero o formato">
+        </label>
+        <div id="topbarAuth">
+          <button class="login-button" id="topbarLoginBtn">Iniciar sesion</button>
+        </div>
+      </header><!-- /topbar -->
+
+      <!-- HERO -->
+      <section class="hero-section">
+        <div class="hero-copy">
+          <span class="section-eyebrow">Acceso exclusivo</span>
+          <h2>Tu panel premium para vivir el cine en Colombia</h2>
+          <p>Consulta cartelera, proximos estrenos, comidas, sedes Gold y beneficios del club.</p>
+          <div class="hero-actions">
+            <button class="primary-button" data-scroll="#cartelera">Comprar boletas</button>
+            <button class="ghost-button" data-scroll="#club">Ver Cine Club</button>
+          </div>
+        </div>
+        <div class="ticket-card">
+          <span>Gold</span>
+          <strong>2D</strong>
+          <small>Entrada especial</small>
+        </div>
+      </section><!-- /hero-section -->
+
+      <!-- STATS -->
+      <section class="stats-grid">
+        <article><span>Peliculas visibles</span><strong id="activeMovies">0</strong></article>
+        <article><span>Comidas</span><strong id="foodCount">0</strong></article>
+        <article><span>Sedes Gold</span><strong id="goldCount">0</strong></article>
+        <article><span>Socios Gold</span><strong>24K</strong></article>
+      </section><!-- /stats-grid -->
+
+      <!-- MIS COMPRAS -->
+      <section class="content-section" id="mis-compras">
+        <div class="section-header">
+          <div>
+            <span class="section-eyebrow">Tu Actividad</span>
+            <h2>Mis Compras</h2>
+          </div>
+        </div>
+        <div class="purchases-grid" id="purchasesGrid">
+          <!-- Compras inyectadas por JS -->
+        </div>
+      </section><!-- /mis-compras -->
+
+      <!-- CARTELERA -->
+      <section class="content-section" id="cartelera">
+        <div class="section-header">
+          <div>
+            <span class="section-eyebrow">Estrenos</span>
+            <h2>Cartelera</h2>
+          </div>
+          <div class="segmented-control" role="tablist">
+            <button class="active" data-filter="all">Todas</button>
+            <button data-filter="accion">Accion</button>
+            <button data-filter="familia">Familia</button>
+            <button data-filter="terror">Terror</button>
+            <button data-filter="drama">Drama</button>
+          </div>
+        </div>
+        <div class="movie-grid" id="movieGrid"></div>
+      </section><!-- /cartelera -->
+
+      <!-- PROXIMOS ESTRENOS -->
+      <section class="content-section" id="proximos">
+        <div class="section-header">
+          <div>
+            <span class="section-eyebrow">Proximamente</span>
+            <h2>Pronto</h2>
+          </div>
+        </div>
+        <div class="poster-grid" id="comingGrid"></div>
+      </section><!-- /proximos -->
+
+      <!-- COMIDAS -->
+      <section class="content-section" id="comidas">
+        <div class="section-header">
+          <div>
+            <span class="section-eyebrow">Confiteria</span>
+            <h2>Comidas</h2>
+          </div>
+        </div>
+        <div class="food-grid" id="foodGrid"></div>
+      </section><!-- /comidas -->
+
+      <!-- SALAS GOLD -->
+      <section class="content-section two-column-section" id="salas">
+        <div>
+          <span class="section-eyebrow">Sala Gold</span>
+          <h2>Sedes y direcciones</h2>
+          <p class="section-copy">Selecciona ciudad para ver sedes recomendadas.</p>
+          <div class="venue-list" id="venueList"></div>
+        </div>
+        <div class="gold-panel">
+          <span>Experiencia Gold</span>
+          <strong>Sillas reclinables, sonido premium y atencion preferencial.</strong>
+          <button data-scroll="#comidas">Pedir comidas</button>
+        </div>
+      </section><!-- /salas -->
+
+      <!-- CINE CLUB -->
+      <section class="content-section two-column-section" id="club">
+        <div>
+          <span class="section-eyebrow">Cine Club</span>
+          <h2>Beneficios del club</h2>
+          <p class="section-copy">Renueva membresia, revisa puntos y activa cupones.</p>
+          <div class="benefit-grid">
+            <article>
+              <strong>2x1 semanal</strong>
+              <span>Martes Gold y funciones seleccionadas.</span>
+            </article>
+            <article>
+              <strong>Puntos por compra</strong>
+              <span>Acumula por boletas, comidas y preventas.</span>
+            </article>
+            <article>
+              <strong>Preventa primero</strong>
+              <span>Acceso anticipado a estrenos.</span>
+            </article>
+          </div>
+        </div>
+        <div class="member-card" id="memberCard">
+          <span>Miembro Gold</span>
+          <strong id="memberName">Inicia sesion</strong>
+          <p id="memberPoints">— puntos disponibles</p>
+          <button id="memberBtn">Iniciar sesion</button>
+        </div>
+      </section><!-- /club -->
+
+      <!-- PROMOCIONES -->
+      <section class="content-section dashboard-band" id="promos">
+        <div>
+          <span class="section-eyebrow">Aliados</span>
+          <h2>Promociones</h2>
+          <p>Cupones y beneficios para usuarios del club.</p>
+        </div>
+        <div class="promo-panel">
+          <strong>Combo Premier</strong>
+          <span>30% menos en confiteria antes de las 5:00 p. m.</span>
+          <button>Activar promocion</button>
+        </div>
+      </section><!-- /promos -->
+
+    </main><!-- /main-content -->
+
+  </div><!-- /app-shell -->
+
+
+  <!-- ============================================================
+       TEMPLATES (JS los clonará en tiempo de ejecucion)
+  ============================================================ -->
+
+  <template id="tplMovieCard">
+    <article class="movie-card">
+      <figure class="poster-frame">
+        <img src="" alt="" loading="lazy">
+        <figcaption></figcaption>
+      </figure>
+      <div class="movie-info">
+        <span class="movie-genre"></span>
+        <h3 class="movie-title"></h3>
+        <p class="movie-desc"></p>
+        <small class="movie-meta"></small>
+        <button class="schedule-button" type="button">Ver horarios</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="tplPosterCard">
+    <article class="poster-card">
+      <figure class="poster-frame tall">
+        <img src="" alt="" loading="lazy">
+        <figcaption>Pronto</figcaption>
+      </figure>
+      <h3 class="poster-title"></h3>
+      <p class="poster-genre"></p>
+      <strong class="poster-date"></strong>
+    </article>
+  </template>
+
+  <template id="tplFoodCard">
+    <article class="food-card">
+      <img src="" alt="" loading="lazy">
+      <div>
+        <h3 class="food-name"></h3>
+        <p class="food-desc"></p>
+        <strong class="food-price"></strong>
+        <button type="button">Agregar</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="tplVenueItem">
+    <article>
+      <strong class="venue-name"></strong>
+      <span class="venue-address"></span>
+      <small class="venue-services"></small>
+    </article>
+  </template>
+
+  <template id="tplPurchaseCard">
+    <article class="purchase-card">
+      <img src="" alt="" loading="lazy">
+      <div class="purchase-card-info">
+        <h3 class="purchase-movie"></h3>
+        <p class="purchase-meta"></p>
+        <p class="purchase-seats"></p>
+      </div>
+      <div class="purchase-card-price">
+        <strong class="purchase-total"></strong>
+        <span class="purchase-status"></span>
+      </div>
+    </article>
+  </template>
+
+
+  <!-- ============================================================
+       MODAL: DETALLE PELICULA
+  ============================================================ -->
+  <div class="movie-modal" id="movieModal" aria-hidden="true">
+    <div class="movie-modal__overlay" id="movieModalOverlay"></div>
+    <section class="movie-detail" role="dialog" aria-modal="true">
+
+      <button class="movie-detail__close" id="closeMovieModal" type="button">Cerrar</button>
+
+      <div class="detail-hero" id="detailHero">
+        <div class="detail-play">
+          <button class="play-button" id="trailerButton" type="button"></button>
+          <span class="play-label">Ver trailer</span>
+        </div>
+        <div class="detail-hero__copy">
+          <span id="detailRating"></span>
+          <h2 id="detailTitle"></h2>
+          <p id="detailGenre"></p>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <aside class="detail-poster">
+          <img id="detailPoster" src="" alt="">
+          <button type="button">Agregar a mi lista</button>
+        </aside>
+        <div class="detail-info">
+          <div class="detail-grid">
+            <article><strong>Directores</strong><span id="detailDirector"></span></article>
+            <article><strong>Duracion</strong><span id="detailDuration"></span></article>
+            <article><strong>Actores</strong><span id="detailActors"></span></article>
+            <article><strong>Fecha de estreno</strong><span id="detailDate"></span></article>
+          </div>
+          <article class="synopsis-block">
+            <strong>Sinopsis</strong>
+            <p id="detailSynopsis"></p>
+          </article>
+          <section class="schedule-panel">
+            <div class="schedule-header">
+              <div>
+                <span class="section-eyebrow">Horarios disponibles</span>
+                <h3 id="detailScheduleCity"></h3>
+              </div>
+              <div class="format-tags" id="detailFormats"></div>
+            </div>
+            <div class="cinema-box">
+              <strong>Reino Gold - Sala principal</strong>
+              <p>Selecciona un horario para comprar:</p>
+              <div class="time-grid" id="detailTimes"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </section>
+  </div><!-- /movieModal -->
+
+
+  <!-- ============================================================
+       MODAL: COMPRA
+  ============================================================ -->
+  <div class="movie-modal" id="purchaseModal" aria-hidden="true">
+    <div class="movie-modal__overlay" id="purchaseModalOverlay"></div>
+    <section class="movie-detail purchase-detail" role="dialog" aria-modal="true">
+
+      <button class="movie-detail__close" id="closePurchaseModal" type="button">Cerrar</button>
+
+      <div class="purchase-content">
+        <h2>Comprar boleta</h2>
+
+        <!-- Formulario de compra (visible solo para usuarios autenticados) -->
+        <div id="purchaseForm" style="display:none;">
+          <div class="purchase-row"><span>Pelicula</span><strong id="pMovieTitle"></strong></div>
+          <div class="purchase-row"><span>Horario</span><strong id="pSchedule"></strong></div>
+          <div class="purchase-row"><span>Formato</span><strong>2D</strong></div>
+          <div class="purchase-row"><span>Precio unitario</span><strong id="pUnitPrice"></strong></div>
+
+          <!-- MAPA DE SILLAS -->
+          <div class="seat-map-section">
+            <div class="seat-legend">
+              <span><small class="seat-legend-box available"></small> Disponible</span>
+              <span><small class="seat-legend-box selected"></small> Seleccionada</span>
+              <span><small class="seat-legend-box unavailable"></small> Ocupada</span>
+            </div>
+            <div class="seat-screen">Pantalla</div>
+            <div class="seat-grid" id="seatGrid"></div>
+          </div>
+
+          <div class="purchase-row"><span>Cantidad de asientos</span><strong id="pQty">0</strong></div>
+          <div class="purchase-total" id="pTotal">Total: $0</div>
+          <button type="button" class="btn-purchase" id="confirmPurchaseBtn">Confirmar compra</button>
+        </div>
+
+        <!-- Mensaje para usuarios no autenticados -->
+        <div id="purchaseLoginMsg" style="display:none;">
+          <p class="purchase-login-msg">Debes iniciar sesion para comprar boletas.</p>
+          <a href="/login.html" class="btn-purchase" style="display:block; text-align:center; text-decoration:none; margin-top:16px;">
+            Iniciar sesion
+          </a>
+        </div>
+
+      </div>
+    </section>
+  </div><!-- /purchaseModal -->
+
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SCRIPTS -->
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+
+</body>
+</html>

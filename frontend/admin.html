@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reino del Septimo Arte | Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="admin-shell">
+
+    <!-- ============================================================
+         SIDEBAR
+    ============================================================ -->
+    <aside class="admin-sidebar">
+
+      <div class="brand-block">
+        <span class="brand-crown">&#9819;</span>
+        <div>
+          <p class="brand-kicker">Admin Panel</p>
+          <h1>Reino del <span>Septimo Arte</span></h1>
+        </div>
+      </div>
+
+      <nav class="admin-nav">
+        <a href="#sec-dashboard" class="active">Dashboard</a>
+        <a href="#sec-movies">Peliculas</a>
+        <a href="#sec-coming">Proximamente</a>
+        <a href="#sec-foods">Comidas</a>
+        <a href="#sec-venues">Sedes</a>
+        <a href="#sec-users">Usuarios</a>
+        <a href="#sec-sales">Ventas</a>
+      </nav>
+
+      <div class="admin-sidebar-bottom">
+        <a href="/" class="admin-link">Ver cartelera</a>
+        <button type="button" class="admin-link" id="adminLogoutBtn">Cerrar sesion</button>
+      </div>
+
+    </aside><!-- /admin-sidebar -->
+
+
+    <!-- ============================================================
+         MAIN
+    ============================================================ -->
+    <main class="admin-main">
+
+      <header class="admin-topbar">
+        <button type="button" class="admin-menu-toggle" id="adminMenuToggle">☰</button>
+        <h2 id="adminPageTitle">Dashboard</h2>
+        <span id="adminUserName">Administrador</span>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section class="admin-section" id="sec-dashboard">
+
+        <div class="stats-row">
+          <div class="stat-card"><span>Ingresos totales</span><strong id="statRevenue">$0</strong></div>
+          <div class="stat-card"><span>Boletas vendidas</span><strong id="statTickets">0</strong></div>
+          <div class="stat-card"><span>Ventas totales</span><strong id="statSales">0</strong></div>
+          <div class="stat-card"><span>Usuarios</span><strong id="statUsers">0</strong></div>
+          <div class="stat-card"><span>Ingresos hoy</span><strong id="statTodayRevenue">$0</strong></div>
+          <div class="stat-card"><span>Boletas hoy</span><strong id="statTodayTickets">0</strong></div>
+        </div>
+
+        <div class="admin-two-col">
+          <div class="admin-card">
+            <h3>Ultimos 7 dias</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Ingresos</th>
+                  <th>Boletas</th>
+                  <th>Ventas</th>
+                </tr>
+              </thead>
+              <tbody id="tableLast7"></tbody>
+            </table>
+          </div>
+          <div class="admin-card">
+            <h3>Peliculas mas vendidas</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Pelicula</th>
+                  <th>Boletas</th>
+                  <th>Ingresos</th>
+                </tr>
+              </thead>
+              <tbody id="tableTopMovies"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section><!-- /sec-dashboard -->
+
+      <!-- PELICULAS -->
+      <section class="admin-section" id="sec-movies">
+        <div class="section-actions">
+          <h3>Peliculas en cartelera</h3>
+          <button type="button" class="btn-gold" id="btnAddMovie">Agregar pelicula</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Poster</th>
+              <th>Titulo</th>
+              <th>Genero</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tableMovies"></tbody>
+        </table>
+      </section><!-- /sec-movies -->
+
+      <!-- PROXIMAMENTE -->
+      <section class="admin-section" id="sec-coming">
+        <div class="section-actions">
+          <h3>Proximamente</h3>
+          <button type="button" class="btn-gold" id="btnAddComing">Agregar</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Poster</th>
+              <th>Titulo</th>
+              <th>Genero</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tableComing"></tbody>
+        </table>
+      </section><!-- /sec-coming -->
+
+      <!-- COMIDAS -->
+      <section class="admin-section" id="sec-foods">
+        <div class="section-actions">
+          <h3>Comidas</h3>
+          <button type="button" class="btn-gold" id="btnAddFood">Agregar comida</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Nombre</th>
+              <th>Precio</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tableFoods"></tbody>
+        </table>
+      </section><!-- /sec-foods -->
+
+      <!-- SEDES -->
+      <section class="admin-section" id="sec-venues">
+        <div class="section-actions">
+          <h3>Sedes</h3>
+          <button type="button" class="btn-gold" id="btnAddVenue">Agregar sede</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Ciudad</th>
+              <th>Nombre</th>
+              <th>Direccion</th>
+              <th>Servicios</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tableVenues"></tbody>
+        </table>
+      </section><!-- /sec-venues -->
+
+      <!-- USUARIOS -->
+      <section class="admin-section" id="sec-users">
+        <div class="section-actions">
+          <h3>Usuarios</h3>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Puntos</th>
+              <th>Membresia</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tableUsers"></tbody>
+        </table>
+      </section><!-- /sec-users -->
+
+      <!-- VENTAS -->
+      <section class="admin-section" id="sec-sales">
+        <div class="section-actions">
+          <h3>Ventas recientes</h3>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Usuario</th>
+              <th>Pelicula</th>
+              <th>Horario</th>
+              <th>Cantidad</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tableSales"></tbody>
+        </table>
+      </section><!-- /sec-sales -->
+
+    </main><!-- /admin-main -->
+
+  </div><!-- /admin-shell -->
+
+
+  <!-- ============================================================
+       MODAL: PELICULA
+  ============================================================ -->
+  <div class="admin-modal" id="movieModal" style="display:none;">
+    <div class="admin-modal-overlay" id="movieModalOverlay"></div>
+    <div class="admin-modal-card">
+
+      <div class="admin-modal-header">
+        <h3 id="movieModalTitle">Agregar pelicula</h3>
+        <button type="button" class="modal-close" id="closeMovieModal">X</button>
+      </div>
+
+      <form id="movieForm" enctype="multipart/form-data">
+        <input type="hidden" id="movieId" name="id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="mTitle">Titulo</label>
+            <input type="text" id="mTitle" name="title" required>
+          </div>
+          <div class="form-group">
+            <label for="mGenre">Genero</label>
+            <input type="text" id="mGenre" name="genre" required>
+          </div>
+          <div class="form-group">
+            <label for="mCategory">Categoria</label>
+            <select id="mCategory" name="category">
+              <option value="accion">Accion</option>
+              <option value="drama">Drama</option>
+              <option value="familia">Familia</option>
+              <option value="terror">Terror</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mStatus">Estado</label>
+            <select id="mStatus" name="status">
+              <option value="Estreno">Estreno</option>
+              <option value="Preventa">Preventa</option>
+              <option value="Cartelera">Cartelera</option>
+            </select>
+          </div>
+                    <div class="form-group">
+            <label for="mDate">Fecha estreno</label>
+            <input type="text" id="mDate" name="release_date" required>
+          </div>
+          <div class="form-group">
+            <label for="mRating">Clasificacion</label>
+            <input type="text" id="mRating" name="rating" required>
+          </div>
+
+          <div class="form-group">
+            <label for="mDirector">Director</label>
+            <input type="text" id="mDirector" name="director">
+          </div>
+          <div class="form-group">
+            <label for="mDuration">Duracion</label>
+            <input type="text" id="mDuration" name="duration">
+          </div>
+          <div class="form-group full">
+            <label for="mActors">Actores</label>
+            <input type="text" id="mActors" name="actors">
+          </div>
+          <div class="form-group full">
+            <label for="mDescription">Descripcion</label>
+            <input type="text" id="mDescription" name="description">
+          </div>
+          <div class="form-group full">
+            <label for="mSynopsis">Sinopsis</label>
+            <textarea id="mSynopsis" name="synopsis" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="mTrailer">Trailer URL</label>
+            <input type="text" id="mTrailer" name="trailer">
+          </div>
+          <div class="form-group">
+            <label for="mPoster">Poster (archivo)</label>
+            <input type="file" id="mPoster" name="poster" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label for="mFormats">Formatos (separar con coma)</label>
+            <input type="text" id="mFormats" name="formats" placeholder="2D, 3D, DOB">
+          </div>
+          <div class="form-group">
+            <label for="mSchedules">Horarios (separar con coma)</label>
+            <input type="text" id="mSchedules" name="schedules" placeholder="3:00 P.M., 5:30 P.M.">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="cancelMovie">Cancelar</button>
+          <button type="submit" class="btn-gold">Guardar</button>
+        </div>
+      </form>
+
+    </div>
+  </div><!-- /movieModal -->
+
+
+  <!-- ============================================================
+       MODAL: COMIDA
+  ============================================================ -->
+  <div class="admin-modal" id="foodModal" style="display:none;">
+    <div class="admin-modal-overlay" id="foodModalOverlay"></div>
+    <div class="admin-modal-card">
+
+      <div class="admin-modal-header">
+        <h3 id="foodModalTitle">Agregar comida</h3>
+        <button type="button" class="modal-close" id="closeFoodModal">X</button>
+      </div>
+
+      <form id="foodForm" enctype="multipart/form-data">
+        <input type="hidden" id="foodId" name="id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fName">Nombre</label>
+            <input type="text" id="fName" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="fPrice">Precio</label>
+            <input type="number" id="fPrice" name="price" required>
+          </div>
+          <div class="form-group full">
+            <label for="fDesc">Descripcion</label>
+            <input type="text" id="fDesc" name="description">
+          </div>
+          <div class="form-group">
+            <label for="fImage">Imagen (archivo)</label>
+            <input type="file" id="fImage" name="image" accept="image/*">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="cancelFood">Cancelar</button>
+          <button type="submit" class="btn-gold">Guardar</button>
+        </div>
+      </form>
+
+    </div>
+  </div><!-- /foodModal -->
+
+
+  <!-- ============================================================
+       MODAL: SEDE
+  ============================================================ -->
+  <div class="admin-modal" id="venueModal" style="display:none;">
+    <div class="admin-modal-overlay" id="venueModalOverlay"></div>
+    <div class="admin-modal-card">
+
+      <div class="admin-modal-header">
+        <h3 id="venueModalTitle">Agregar sede</h3>
+        <button type="button" class="modal-close" id="closeVenueModal">X</button>
+      </div>
+
+      <form id="venueForm">
+        <input type="hidden" id="venueId" name="id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="vCity">Ciudad</label>
+            <input type="text" id="vCity" name="city" required>
+          </div>
+          <div class="form-group">
+            <label for="vName">Nombre</label>
+            <input type="text" id="vName" name="name" required>
+          </div>
+          <div class="form-group full">
+            <label for="vAddress">Direccion</label>
+            <input type="text" id="vAddress" name="address" required>
+          </div>
+          <div class="form-group full">
+            <label for="vServices">Servicios</label>
+            <input type="text" id="vServices" name="services">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="cancelVenue">Cancelar</button>
+          <button type="submit" class="btn-gold">Guardar</button>
+        </div>
+      </form>
+
+    </div>
+  </div><!-- /venueModal -->
+
+
+  <!-- ============================================================
+       MODAL: PROXIMAMENTE
+  ============================================================ -->
+  <div class="admin-modal" id="comingModal" style="display:none;">
+    <div class="admin-modal-overlay" id="comingModalOverlay"></div>
+    <div class="admin-modal-card">
+
+      <div class="admin-modal-header">
+        <h3 id="comingModalTitle">Agregar proximamente</h3>
+        <button type="button" class="modal-close" id="closeComingModal">X</button>
+      </div>
+
+      <form id="comingForm" enctype="multipart/form-data">
+        <input type="hidden" id="comingId" name="id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="cTitle">Titulo</label>
+            <input type="text" id="cTitle" name="title" required>
+          </div>
+          <div class="form-group">
+            <label for="cGenre">Genero</label>
+            <input type="text" id="cGenre" name="genre" required>
+          </div>
+          <div class="form-group">
+            <label for="cDate">Fecha estreno</label>
+            <input type="text" id="cDate" name="release_date" required>
+          </div>
+          <div class="form-group">
+            <label for="cPoster">Poster (archivo)</label>
+            <input type="file" id="cPoster" name="poster" accept="image/*">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="cancelComing">Cancelar</button>
+          <button type="submit" class="btn-gold">Guardar</button>
+        </div>
+      </form>
+
+    </div>
+  </div><!-- /comingModal -->
+
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SCRIPTS -->
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+
+</body>
+</html>
