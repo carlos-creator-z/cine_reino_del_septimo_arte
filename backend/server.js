@@ -22,7 +22,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const frontendPath = path.join(__dirname, 'frontend');
+const frontendPath = path.join(__dirname, '../frontend')
 
 // =======================================================
 // 1. PRIMERO: MONTAR LAS RUTAS DE LA API
