@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const connectDB = require('./config/db');
-const seedDB = require('./seed/seed');
+
 
 const authRoutes = require('./routes/auth');
 const movieRoutes = require('./routes/movies');
@@ -80,7 +80,6 @@ const PORT = process.env.PORT || 3000;
 
 const start = async () => {
   await connectDB();
-  await seedDB();
   app.listen(PORT, () => {
     console.log('');
     console.log('  🎬 Reino del Séptimo Arte — Servidor iniciado');
