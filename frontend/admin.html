@@ -38,6 +38,12 @@
         <a href="/" class="admin-link">Ver cartelera</a>
         <button type="button" class="admin-link" id="adminLogoutBtn">Cerrar sesion</button>
       </div>
+      
+      <div class="admin-sidebar-bottom">
+        <button type="button" class="admin-link" id="openScannerBtn" style="background: var(--gold); color: var(--black);">📷 Escanear QR</button>
+        <a href="/" class="admin-link">Ver cartelera</a>
+        <button type="button" class="admin-link" id="adminLogoutBtn">Cerrar sesion</button>
+      </div>
 
     </aside><!-- /admin-sidebar -->
 
@@ -442,14 +448,46 @@
 
     </div>
   </div><!-- /comingModal -->
+  <!-- ============================================================
+       MODAL: ESCÁNER QR
+  ============================================================ -->
+  <div class="admin-modal" id="scannerModal" style="display:none;">
+    <div class="admin-modal-overlay" id="scannerModalOverlay"></div>
+    <div class="admin-modal-card" style="max-width: 500px;">
+      
+      <div class="admin-modal-header">
+        <h3>📷 Escanear Factura QR</h3>
+        <button type="button" class="modal-close" id="closeScannerModal">X</button>
+      </div>
 
+      <!-- Contenedor de la cámara -->
+      <div id="qr-reader" style="width: 100%; margin-bottom: 20px; border-radius: 8px; overflow: hidden;"></div>
+
+      <!-- Resultado del escaneo -->
+      <div id="scan-result" style="display: none; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;"></div>
+
+      <!-- Ingreso manual (por si no funciona la cámara) -->
+      <div class="form-group full" style="margin-top: 20px;">
+        <label>O ingresa el código manualmente:</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="manualCodeInput" placeholder="Ej: RSA-K9F2X1P4 o ID" style="flex: 1;">
+          <button type="button" class="btn-gold" id="validateManualBtn">Validar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
-  <!-- SCRIPTS -->
+  <!-- Librería del Escáner QR -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  
   <script src="js/api.js"></script>
   <script src="js/admin.js"></script>
+
 
 </body>
 </html>

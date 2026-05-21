@@ -17,7 +17,7 @@ const saleSchema = new mongoose.Schema({
 
   total_price: { type: Number, required: true, min: 0 },
 
-  status: { type: String, default: 'confirmed', enum: ['confirmed', 'cancelled', 'pending'] },
+  status: { type: String, default: 'confirmed', enum: ['confirmed', 'cancelled', 'pending', 'redeemed'] },
 
   seats: { type: [String], default: [] }, // <--- ESTA LÍNEA ES LA QUE GUARDA LAS SILLAS (A1, C4, etc)
   

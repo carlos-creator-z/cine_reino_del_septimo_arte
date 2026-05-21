@@ -496,5 +496,102 @@ async function loadSales() {
   } catch (e) { console.error(e); }
 }
 
+// ─── Escáner QR ────────────────────────────────────────────────────────────────
+let html5QrCode = null;
+
+function openScannerModal() {
+  openModal('scannerModal');
+  document.getElementById('scan-result').style.display = 'none';
+  document.getElementById('manualCodeInput').value = '';
+  
+  // Iniciar cámara
+  html5QrCode = new Html5Qrcode("qr-reader");
+  html5QrCode.start(
+    { facingMode: "environment" }, // Usa la cámara trasera en móviles
+    { fps: 10, qrbox: { width: 250, height: 250 } },
+    onScanSuccess,
+    onScanFailure
+  ).catch(err => {
+    console.error('Error al iniciar cámara:', err);
+    document.getElementById('qr-reader').innerHTML = '<p style="color:var(--danger);text-align:center;padding:20px;">No se pudo acceder a la cámara. Usa el ingreso manual.</p>';
+  });
+}
+
+function closeScannerModal() {
+  if (html5QrCode && html5QrCode.isScanning) {
+    html5QrCode.stop().then(() => {
+      closeModal('scannerModal');
+    }).catch(() => {
+      closeModal('scannerModal');
+    });
+  } else {
+    closeModal('scannerModal');
+  }
+}
+
+async function onScanSuccess(decodedText) {
+  // Detener escáner al leer uno
+  try { await html5QrCode.stop(); } catch(e) {}
+
+  let codeToValidate = '';
+  
+  // Intentar parsear el JSON del QR
+  try {
+    const qrData = JSON.parse(decodedText);
+    codeToValidate = qrData.id || qrData.codigo; // Tomar el ID o el código
+  } catch (e) {
+    codeToValidate = decodedText; // Si no es JSON, usar el texto tal cual
+  }
+
+  validateTicketCode(codeToValidate);
+}
+
+function onScanFailure(error) {
+  // Silenciar errores de escaneo continuo
+}
+
+async function validateTicketCode(code) {
+  const resultDiv = document.getElementById('scan-result');
+  resultDiv.style.display = 'block';
+  resultDiv.className = '';
+  resultDiv.innerHTML = '<p style="color:var(--muted)">Validando boleta...</p>';
+
+  try {
+    const res = await api('/api/sales/redeem', {
+      method: 'POST',
+      body: { code: code }
+    });
+
+    // Éxito (Boleta válida)
+    resultDiv.className = 'scan-success';
+    resultDiv.innerHTML = `
+      <h4>✅ ¡Boleta Válida!</h4>
+      <p><strong>Película:</strong> ${res.sale.movie?.title || 'N/A'}</p>
+      <p><strong>Cliente:</strong> ${res.sale.user?.name || 'N/A'}</p>
+      <p><strong>Asientos:</strong> ${res.sale.seats?.join(', ') || 'General'}</p>
+      <p style="margin-top:10px; font-weight:700; color: var(--gold-bright);">ENTREGAR BOLETAS</p>
+    `;
+    showToast('✅ Factura canjeada', 3000);
+
+  } catch (err) {
+    // Error (Ya usada o inválida)
+    const errorMsg = err.message || 'Código inválido';
+    resultDiv.className = 'scan-error';
+    resultDiv.innerHTML = `
+      <h4>❌ Boleta Rechazada</h4>
+      <p>${errorMsg}</p>
+    `;
+    showToast('❌ Error al validar', 3000);
+  }
+}
+
+// Event Listeners del Escáner
+document.getElementById('openScannerBtn').addEventListener('click', openScannerModal);
+document.getElementById('closeScannerModal').addEventListener('click', closeScannerModal);
+document.getElementById('scannerModalOverlay').addEventListener('click', closeScannerModal);
+document.getElementById('validateManualBtn').addEventListener('click', () => {
+  const code = document.getElementById('manualCodeInput').value.trim();
+  if (code) validateTicketCode(code);
+});
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { loadDashboard(); });

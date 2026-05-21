@@ -622,3 +622,15 @@ button {
   }
   .admin-table td[data-label="Acciones"]::before { display: none; } /* No mostrar "Acciones:" */
 }
+
+/* ============================================================
+   ESCÁNER QR
+   ============================================================ */
+#qr-reader video { border-radius: 8px; }
+#qr-reader { border: 2px solid var(--line) !important; border-radius: 8px; }
+
+.scan-success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+.scan-error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+
+#scan-result h4 { margin: 0 0 10px; font-family: var(--ff-display); font-size: 1.3rem; color: var(--white); }
+#scan-result p { margin: 0; font-size: 0.95rem; line-height: 1.5; }

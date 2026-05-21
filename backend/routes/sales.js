@@ -22,7 +22,9 @@ router.get('/factura/:id', auth, async (req, res) => {
     }
 
     // 1. Generar datos del QR
+    // 1. Generar datos del QR 
     const qrData = JSON.stringify({
+      id: sale._id.toString(), // <--- MUY IMPORTANTE PARA EL ESCÁNER
       codigo: sale.redemptionCode || sale._id.toString().slice(-8).toUpperCase(),
       pelicula: sale.movie.title,
       asientos: sale.seats
@@ -259,6 +261,42 @@ router.get('/', auth, adminOnly, async (req, res) => {
     );
   } catch {
     res.status(500).json({ error: 'Error' });
+  }
+});
+// RUTA: Canjear factura (Por ID o por Código) - Escáner QR
+router.post('/redeem', auth, adminOnly, async (req, res) => {
+  try {
+    const { code } = req.body; // Puede ser el ID largo o el código corto
+    if (!code) return res.status(400).json({ error: 'Código no proporcionado' });
+
+    // Buscamos por ID exacto o por código de canje
+    const sale = await Sale.findOne({
+      $or: [
+        { _id: code.length === 24 ? code : null }, // Si tiene 24 caracteres, es un ID de Mongo
+        { redemptionCode: code.toUpperCase() }
+      ]
+    }).populate('user', 'name').populate('movie', 'title');
+
+    if (!sale) return res.status(404).json({ error: '❌ Venta no encontrada. Código inválido.' });
+    
+    if (sale.status === 'redeemed') {
+      return res.status(400).json({ error: `❌ ESTA FACTURA YA FUE CANJEADA el ${new Date(sale.updatedAt).toLocaleDateString('es-CO')}` });
+    }
+    
+    if (sale.status !== 'confirmed') {
+      return res.status(400).json({ error: `❌ Esta venta está en estado: ${sale.status}` });
+    }
+
+    // Canjeamos (cambiamos estado a redeemed)
+    sale.status = 'redeemed';
+    await sale.save();
+
+    res.json({ 
+      message: `✅ ¡Factura canjeada exitosamente! Entregar boletas a: ${sale.user.name}`, 
+      sale 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al canjear la factura' });
   }
 });
 
