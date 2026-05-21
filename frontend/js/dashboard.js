@@ -314,6 +314,37 @@ async function loadPurchaseHistory() {
       statusSpan.textContent = purchase.status === 'confirmed' ? 'Confirmada' : purchase.status;
       statusSpan.className   = 'purchase-status status-' + purchase.status;
 
+      // --- NUEVO: LÓGICA DEL BOTÓN FACTURA PDF ---
+      const receiptBtn = card.querySelector('.btn-receipt');
+      if (purchase.status === 'confirmed') {
+        receiptBtn.style.display = 'block'; // Mostramos el botón
+        receiptBtn.addEventListener('click', async () => {
+          try {
+            // Llamada a la API con el token para descargar el archivo
+            const token = localStorage.getItem('rsa_token') || sessionStorage.getItem('rsa_token');
+            const response = await fetch(`/api/sales/factura/${purchase._id}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) throw new Error('Error al descargar');
+            
+            // Crear un Blob (archivo) con la respuesta y forzar la descarga
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Factura_${purchase.movie?.title || 'Cine'}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          } catch (err) {
+            showToast('Error al generar la factura');
+          }
+        });
+      }
+      // --------------------------------------
+
       grid.appendChild(card);
     });
   } catch (e) {
@@ -711,3 +742,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
   setupScrollSpy();
 });
+
