@@ -7,7 +7,7 @@ const router = express.Router();
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 
-// RUTA: Generar Factura PDF
+// RUTA: Generar Factura PDF 
 router.get('/factura/:id', auth, async (req, res) => {
   try {
     const sale = await Sale.findById(req.params.id)
@@ -16,20 +16,18 @@ router.get('/factura/:id', auth, async (req, res) => {
       .populate('foods.food', 'name');
 
     if (!sale) return res.status(404).json({ error: 'Venta no encontrada' });
-    // Seguridad: Solo el dueño o el admin pueden descargar la factura
     if (sale.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'No autorizado' });
     }
 
-    // 1. Generar datos del QR
-    // 1. Generar datos del QR 
+    // 1. Generar datos del QR (CON EL ID PARA EL ESCÁNER)
     const qrData = JSON.stringify({
-      id: sale._id.toString(), // <--- MUY IMPORTANTE PARA EL ESCÁNER
+      id: sale._id.toString(), 
       codigo: sale.redemptionCode || sale._id.toString().slice(-8).toUpperCase(),
       pelicula: sale.movie.title,
       asientos: sale.seats
     });
-    const qrBuffer = await QRCode.toBuffer(qrData, { width: 150, margin: 1 });
+    const qrBuffer = await QRCode.toBuffer(qrData, { width: 200, margin: 1 });
 
     // 2. Crear documento PDF
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -46,67 +44,79 @@ router.get('/factura/:id', auth, async (req, res) => {
     // Fondo negro
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(black);
 
-    // Header
-    doc.fontSize(24).fillColor(gold).font('Helvetica-Bold').text('REINO DEL SEPTIMO ARTE', 50, 50, { align: 'center' });
-    doc.fontSize(12).fillColor(white).font('Helvetica').text('Factura de Compra', { align: 'center' });
+    // Header Dorado
+    doc.rect(0, 0, doc.page.width, 90).fill(gold);
+    doc.fontSize(26).fillColor(black).font('Helvetica-Bold').text('REINO DEL SEPTIMO ARTE', 50, 30, { align: 'center' });
+
+    // Subheader
     doc.moveDown(2);
+    doc.fontSize(14).fillColor(gold).font('Helvetica').text('FACTURA DE COMPRA', 50, 110, { align: 'center' });
 
     // Datos de la película
-    const movieY = doc.y;
-    doc.rect(50, movieY, doc.page.width - 100, 80).fill(darkPanel);
-    doc.fillColor(gold).font('Helvetica-Bold').fontSize(20).text(sale.movie.title, 70, movieY + 15, { width: doc.page.width - 140 });
-    doc.fillColor(white).font('Helvetica').fontSize(14).text(`Horario: ${sale.schedule} | Formato: ${sale.format}`, 70, movieY + 45, { width: doc.page.width - 140 });
-    doc.y = movieY + 100;
+    let currentY = 150;
+    doc.rect(50, currentY, doc.page.width - 100, 80).fill(darkPanel);
+    doc.fillColor(gold).font('Helvetica-Bold').fontSize(22).text(sale.movie.title, 70, currentY + 15, { width: doc.page.width - 140 });
+    doc.fillColor(white).font('Helvetica').fontSize(14).text(`Horario: ${sale.schedule} | Formato: ${sale.format}`, 70, currentY + 50, { width: doc.page.width - 140 });
+    currentY += 100;
 
     // Info cliente
     doc.fillColor(white).font('Helvetica').fontSize(12);
-    doc.text(`Cliente: ${sale.user.name}`, 50);
-    doc.text(`Fecha: ${sale.createdAt.toLocaleDateString('es-CO')}`);
-    doc.text(`Codigo de canje: ${sale.redemptionCode || 'N/A'}`);
-    doc.moveDown(1.5);
+    doc.text(`Cliente: ${sale.user.name}`, 50, currentY);
+    doc.text(`Fecha: ${sale.createdAt.toLocaleDateString('es-CO')}`, 50, currentY + 20);
+    currentY += 50;
 
     // Asientos
     if (sale.seats && sale.seats.length > 0) {
-      const seatY = doc.y;
-      doc.rect(50, seatY, doc.page.width - 100, 40).fill(darkPanel);
-      doc.fillColor(gold).font('Helvetica-Bold').text('ASIENTOS', 70, seatY + 12);
-      doc.fillColor(white).font('Helvetica').text(sale.seats.join(', '), 180, seatY + 12);
-      doc.y = seatY + 60;
+      doc.rect(50, currentY, doc.page.width - 100, 40).fill(darkPanel);
+      doc.fillColor(gold).font('Helvetica-Bold').text('ASIENTOS', 70, currentY + 12);
+      doc.fillColor(white).font('Helvetica').text(sale.seats.join(', '), 180, currentY + 12);
+      currentY += 60;
     }
 
     // Comidas
     let foodTotal = 0;
     if (sale.foods && sale.foods.length > 0) {
-      const foodY = doc.y;
-      doc.rect(50, foodY, doc.page.width - 100, 40).fill(darkPanel);
-      doc.fillColor(gold).font('Helvetica-Bold').text('COMIDAS', 70, foodY + 12);
-      doc.y = foodY + 60;
+      doc.rect(50, currentY, doc.page.width - 100, 40).fill(darkPanel);
+      doc.fillColor(gold).font('Helvetica-Bold').text('COMIDAS', 70, currentY + 12);
+      currentY += 60;
 
       doc.fillColor(white).font('Helvetica');
       sale.foods.forEach(f => {
         const name = f.food ? f.food.name : 'Comida';
         const price = f.total_price || 0;
         foodTotal += price;
-        doc.text(`${name} x${f.quantity}`, 70, doc.y, { continued: true, width: 300 });
+        doc.text(`${name} x${f.quantity}`, 70, currentY, { continued: true, width: 300 });
         doc.text(`$${price.toLocaleString()}`, { align: 'right', width: 150 });
+        currentY += 20;
       });
       doc.moveDown(0.5);
-      doc.fillColor(gold).font('Helvetica-Bold').text(`Total Comidas: $${foodTotal.toLocaleString()}`, 70, doc.y, { align: 'right', width: doc.page.width - 120 });
-      doc.moveDown(1.5);
+      currentY = doc.y;
+      doc.fillColor(gold).font('Helvetica-Bold').text(`Total Comidas: $${foodTotal.toLocaleString()}`, 70, currentY, { align: 'right', width: doc.page.width - 120 });
+      currentY += 30;
     }
 
     // Total Boletas
     const ticketsTotal = sale.total_price - foodTotal;
-    doc.fillColor(white).font('Helvetica').text(`Total Boletas: $${ticketsTotal.toLocaleString()}`, 50, doc.y, { align: 'right', width: doc.page.width - 120 });
-    doc.moveDown(1);
+    doc.fillColor(white).font('Helvetica').text(`Total Boletas: $${ticketsTotal.toLocaleString()}`, 50, currentY, { align: 'right', width: doc.page.width - 120 });
+    currentY += 30;
 
     // Gran Total
-    doc.rect(50, doc.y, doc.page.width - 100, 50).fill(gold);
-    doc.fillColor(black).font('Helvetica-Bold').fontSize(20).text(`TOTAL: $${sale.total_price.toLocaleString()}`, 70, doc.y + 15);
+    doc.rect(50, currentY, doc.page.width - 100, 50).fill(gold);
+    doc.fillColor(black).font('Helvetica-Bold').fontSize(20).text(`TOTAL: $${sale.total_price.toLocaleString()}`, 70, currentY + 15);
+    currentY += 80;
 
-    // Código QR
-    doc.image(qrBuffer, doc.page.width - 150, 50, { width: 100 });
-    doc.fillColor(white).font('Helvetica').fontSize(8).text('Escanea para canjear', doc.page.width - 150, 155, { width: 100, align: 'center' });
+    // --- CÓDIGO QR (ABAJO, GRANDE Y CENTRADO) ---
+    const redemptionCode = sale.redemptionCode || sale._id.toString().slice(-8).toUpperCase();
+    const qrSize = 150;
+    const qrX = (doc.page.width - qrSize) / 2; 
+    
+    doc.image(qrBuffer, qrX, currentY, { width: qrSize });
+    currentY += qrSize + 15;
+    
+    doc.fillColor(gold).font('Helvetica-Bold').fontSize(18).text(`Código: ${redemptionCode}`, 50, currentY, { align: 'center' });
+    
+    // TEXTO DE UN SOLO USO
+    doc.fillColor(white).font('Helvetica').fontSize(11).text('⚠️ VÁLIDO PARA UN SOLO ESCANEO. Al usarlo, esta factura quedará anulada.', 50, currentY + 25, { align: 'center' });
 
     doc.end();
   } catch (error) {
