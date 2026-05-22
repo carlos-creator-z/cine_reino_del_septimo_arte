@@ -11,18 +11,18 @@ cloudinary.config({
 
 // Configurar dónde se guardan los Pósters de las películas
 const posterStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary: cloudinary, // <--- CORRECTO
   params: {
-    folder: 'cine_posters', // Nombre de la carpeta que se creará en Cloudinary
+    folder: 'cine_posters',
     allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
   }
 });
 
 // Configurar dónde se guardan las fotos de las Comidas
 const foodStorage = new CloudinaryStorage({
-  cloudiny: cloudinary,
+  cloudinary: cloudinary, // <--- AQUÍ ESTABA EL ERROR ANTES (decía cloudiny)
   params: {
-    folder: 'cine_foods', // Nombre de la carpeta para comidas en Cloudinary
+    folder: 'cine_foods',
     allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
   }
 });
