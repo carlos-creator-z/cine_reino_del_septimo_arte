@@ -65,14 +65,14 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
   }
 });
 
-// Elimina (soft delete) una película por ID marcándola como active: false.
+
 // Solo accesible para administradores autenticados.
 router.delete('/:id', auth, adminOnly, async (req, res) => {
   try {
-    const m = await Movie.findByIdAndUpdate(req.params.id, { active: false }, { returnDocument: 'after' });
+    // Cambiamos findByIdAndUpdate por findByIdAndDelete
+    const m = await Movie.findByIdAndDelete(req.params.id);
     if (!m) return res.status(404).json({ error: 'No encontrada' });
-
-    res.json({ message: 'Eliminada' });
+    res.json({ message: 'Eliminada permanentemente' });
   } catch {
     res.status(500).json({ error: 'Error' });
   }

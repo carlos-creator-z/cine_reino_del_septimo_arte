@@ -43,14 +43,13 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
   }
 });
 
-// Elimina (soft delete) un próximo estreno por ID marcándolo como active: false.
+
 // Solo accesible para administradores autenticados.
 router.delete('/:id', auth, adminOnly, async (req, res) => {
   try {
-    const i = await ComingSoon.findByIdAndUpdate(req.params.id, { active: false });
-    if (!i) return res.status(404).json({ error: 'No' });
-
-    res.json({ message: 'Eliminado' });
+    const item = await ComingSoon.findByIdAndDelete(req.params.id);
+    if (!item) return res.status(404).json({ error: 'No encontrado' });
+    res.json({ message: 'Eliminado permanentemente' });
   } catch {
     res.status(500).json({ error: 'Error' });
   }

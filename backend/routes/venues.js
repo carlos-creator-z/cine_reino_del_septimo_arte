@@ -62,14 +62,13 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
   }
 });
 
-// Elimina (soft delete) un venue por ID marcándolo como active: false.
+
 // Solo accesible para administradores autenticados.
 router.delete('/:id', auth, adminOnly, async (req, res) => {
   try {
-    const i = await Venue.findByIdAndUpdate(req.params.id, { active: false });
-    if (!i) return res.status(404).json({ error: 'No' });
-
-    res.json({ message: 'Eliminado' });
+    const item = await Venue.findByIdAndDelete(req.params.id);
+    if (!item) return res.status(404).json({ error: 'No encontrado' });
+    res.json({ message: 'Eliminado permanentemente' });
   } catch {
     res.status(500).json({ error: 'Error' });
   }
