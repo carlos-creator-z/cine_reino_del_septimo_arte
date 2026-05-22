@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 router.post('/', auth, adminOnly, uploadPoster.single('poster'), async (req, res) => {
   try {
     const d = { ...req.body };
-    if (req.file) d.poster = `/uploads/posters/${req.file.filename}`;
+    if (req.file) d.poster = req.file.path; // <--- CORREGIDO: Cloudinary devuelve la URL completa aquí
 
     res.status(201).json(await ComingSoon.create(d));
   } catch (e) {
@@ -34,7 +34,7 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
     if (!ex) return res.status(404).json({ error: 'No' });
 
     const d = { ...req.body };
-    if (req.file) data.poster = req.file.path; // Cloudinary devuelve la URL completa en req.file.path
+    if (req.file) d.poster = req.file.path; // <--- CORREGIDO: era data.poster, es d.poster
     else if (!d.poster) d.poster = ex.poster;
 
     res.json(await ComingSoon.findByIdAndUpdate(req.params.id, d, { returnDocument: 'after' }));
@@ -42,7 +42,6 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
     res.status(400).json({ error: e.message });
   }
 });
-
 
 // Solo accesible para administradores autenticados.
 router.delete('/:id', auth, adminOnly, async (req, res) => {

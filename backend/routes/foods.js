@@ -19,7 +19,7 @@ router.post('/', auth, adminOnly, uploadFood.single('image'), async (req, res) =
   try {
     const d = { ...req.body };
     d.price = parseFloat(d.price);
-    if (req.file) d.image = `/uploads/foods/${req.file.filename}`;
+    if (req.file) d.image = req.file.path; // <--- CORREGIDO: Cloudinary devuelve la URL completa aquí
 
     res.status(201).json(await Food.create(d));
   } catch (e) {
@@ -37,7 +37,7 @@ router.put('/:id', auth, adminOnly, uploadFood.single('image'), async (req, res)
 
     const d = { ...req.body };
     if (d.price) d.price = parseFloat(d.price);
-    if (req.file) data.image = req.file.path; // Cloudinary devuelve la URL completa en req.file.path
+    if (req.file) d.image = req.file.path; // <--- CORREGIDO: era data.image, es d.image
     else if (!d.image) d.image = ex.image;
 
     res.json(await Food.findByIdAndUpdate(req.params.id, d, { returnDocument: 'after' }));
@@ -45,7 +45,6 @@ router.put('/:id', auth, adminOnly, uploadFood.single('image'), async (req, res)
     res.status(400).json({ error: e.message });
   }
 });
-
 
 // Solo accesible para administradores autenticados.
 router.delete('/:id', auth, adminOnly, async (req, res) => {
