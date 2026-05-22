@@ -70,11 +70,7 @@ app.get('/login.html', (req, res) => res.sendFile(path.join(frontendPath, 'login
 app.get('/register.html', (req, res) => res.sendFile(path.join(frontendPath, 'register.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(frontendPath, 'admin.html')));
 
-// Crear directorios de uploads si no existen
-['uploads', 'uploads/posters', 'uploads/foods'].forEach(dir => {
-  const dirPath = path.join(__dirname, dir);
-  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
-});
+
 
 const PORT = process.env.PORT || 3000;
 
