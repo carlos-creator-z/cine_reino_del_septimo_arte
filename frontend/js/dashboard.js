@@ -9,6 +9,8 @@ let ticketQty      = 1;
 let selectedMovieId   = null;
 let selectedSchedule  = null;
 let selectedSeats     = [];
+let allFoods      = []; // Para guardar las comidas disponibles
+let selectedFoods = []; // El carrito de comidas del usuario
 
 const UNIT_PRICE = 25000;
 const SEAT_ROWS  = 4;
@@ -207,6 +209,7 @@ async function loadFoods() {
   try {
     const foods = await api('/api/foods');
     if (!foods) return;
+    allFoods = foods; // <--- AGREGAR ESTA LÍNEA PARA GUARDAR LAS COMIDAS
 
     document.getElementById('foodCount').textContent = foods.length.toString().padStart(2, '0');
 
@@ -308,19 +311,26 @@ async function loadPurchaseHistory() {
         `<strong>Fecha:</strong> ${fecha} &nbsp;|&nbsp; <strong>Horario:</strong> ${purchase.schedule}`;
       card.querySelector('.purchase-seats').innerHTML     =
         `<strong>Asientos:</strong> ${asientos}`;
+
+      // --- NUEVO: LÓGICA PARA MOSTRAR LAS COMIDAS ---
+      const comidas = purchase.foods && purchase.foods.length > 0 
+        ? purchase.foods.map(f => `${f.food?.name || 'Comida'} x${f.quantity}`).join(', ') 
+        : 'Ninguna';
+      card.querySelector('.purchase-foods').innerHTML = `<strong>Comidas:</strong> ${comidas}`;
+      // ----------------------------------------------
+
       card.querySelector('.purchase-total').textContent   = '$' + purchase.total_price.toLocaleString();
       
       const statusSpan       = card.querySelector('.purchase-status');
       statusSpan.textContent = purchase.status === 'confirmed' ? 'Confirmada' : purchase.status;
       statusSpan.className   = 'purchase-status status-' + purchase.status;
 
-      // --- NUEVO: LÓGICA DEL BOTÓN FACTURA PDF ---
+      // --- LÓGICA DEL BOTÓN FACTURA PDF ---
       const receiptBtn = card.querySelector('.btn-receipt');
       if (purchase.status === 'confirmed') {
         receiptBtn.style.display = 'block'; // Mostramos el botón
         receiptBtn.addEventListener('click', async () => {
           try {
-            // Llamada a la API con el token para descargar el archivo
             const token = localStorage.getItem('rsa_token') || sessionStorage.getItem('rsa_token');
             const response = await fetch(`/api/sales/factura/${purchase._id}`, {
               headers: { 'Authorization': `Bearer ${token}` }
@@ -328,7 +338,6 @@ async function loadPurchaseHistory() {
             
             if (!response.ok) throw new Error('Error al descargar');
             
-            // Crear un Blob (archivo) con la respuesta y forzar la descarga
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -416,11 +425,9 @@ function openMovieDetail(id) {
   const movie = allMovies.find(m => m._id === id);
   if (!movie) return;
 
-  // Hero con póster de fondo
   document.getElementById('detailHero').style.backgroundImage =
     `linear-gradient(90deg,rgba(8,7,6,0.92),rgba(8,7,6,0.35)),url('${movie.poster}')`;
 
-  // Datos principales
   document.getElementById('detailRating').textContent  = movie.rating;
   document.getElementById('detailTitle').textContent   = movie.title;
   document.getElementById('detailGenre').textContent   = movie.genre;
@@ -432,13 +439,11 @@ function openMovieDetail(id) {
   document.getElementById('detailScheduleCity').textContent =
     'Hoy en ' + document.getElementById('currentCity').textContent;
 
-  // Póster
   const poster   = document.getElementById('detailPoster');
   poster.src     = movie.poster || fallbackPoster(movie.title);
   poster.alt     = movie.title;
   poster.onerror = function () { this.onerror = null; this.src = fallbackPoster(movie.title); };
 
-  // Formatos disponibles
   const formatsContainer = document.getElementById('detailFormats');
   formatsContainer.textContent = '';
   (movie.formats || []).forEach(format => {
@@ -448,7 +453,6 @@ function openMovieDetail(id) {
     formatsContainer.appendChild(tag);
   });
 
-  // Horarios disponibles
   const timesContainer = document.getElementById('detailTimes');
   timesContainer.textContent = '';
   (movie.schedules || []).forEach((schedule, index) => {
@@ -466,7 +470,6 @@ function openMovieDetail(id) {
     timesContainer.appendChild(btn);
   });
 
-  // Botón de tráiler
   document.getElementById('trailerButton').onclick = () => {
     if (movie.trailer) window.open(movie.trailer, '_blank');
   };
@@ -543,8 +546,77 @@ function toggleSeatSelection(seatId, btn) {
 /** Recalcula y muestra el total según los asientos seleccionados. */
 function updatePurchaseTotal() {
   ticketQty = selectedSeats.length;
-  document.getElementById('pQty').textContent   = ticketQty;
-  document.getElementById('pTotal').textContent = 'Total: $' + (UNIT_PRICE * ticketQty).toLocaleString();
+  document.getElementById('pQty').textContent = ticketQty;
+  
+  const ticketsTotal = ticketQty * UNIT_PRICE;
+  const foodsTotal = selectedFoods.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  const grandTotal = ticketsTotal + foodsTotal;
+  
+  document.getElementById('pTotal').textContent = 'Total: $' + grandTotal.toLocaleString();
+}
+
+// --- NUEVAS FUNCIONES: CARRITO DE COMIDAS ---
+function renderModalFoods() {
+  const grid = document.getElementById('modalFoodGrid');
+  grid.textContent = '';
+  allFoods.forEach(food => {
+    const div = document.createElement('div');
+    div.className = 'modal-food-item';
+    div.innerHTML = `
+      <div><span>${food.name}</span><small>$${food.price.toLocaleString()}</small></div>
+      <button type="button" class="modal-food-add" data-id="${food._id}">+</button>
+    `;
+    div.querySelector('button').addEventListener('click', () => addFoodToCart(food._id));
+    grid.appendChild(div);
+  });
+}
+
+function addFoodToCart(foodId) {
+  const food = allFoods.find(f => f._id === foodId);
+  const existing = selectedFoods.find(f => f.food_id === foodId);
+  if (existing) {
+    existing.quantity++;
+  } else {
+    selectedFoods.push({ food_id: foodId, name: food.name, quantity: 1, unit_price: food.price });
+  }
+  updatePurchaseTotal();
+  renderCartList();
+}
+
+function removeFoodFromCart(foodId) {
+  const existing = selectedFoods.find(f => f.food_id === foodId);
+  if (existing) {
+    existing.quantity--;
+    if (existing.quantity <= 0) {
+      selectedFoods = selectedFoods.filter(f => f.food_id !== foodId);
+    }
+  }
+  updatePurchaseTotal();
+  renderCartList();
+}
+
+function renderCartList() {
+  const section = document.getElementById('modalCartSection');
+  const list = document.getElementById('modalCartList');
+  
+  if (selectedFoods.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  section.style.display = 'block';
+  list.textContent = '';
+  
+  selectedFoods.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'modal-cart-item';
+    div.innerHTML = `
+      <span>${item.name} x${item.quantity} ($${(item.quantity * item.unit_price).toLocaleString()})</span>
+      <button type="button" class="remove-food-btn" data-id="${item.food_id}">-</button>
+    `;
+    div.querySelector('button').addEventListener('click', () => removeFoodFromCart(item.food_id));
+    list.appendChild(div);
+  });
 }
 
 
@@ -569,7 +641,11 @@ function openPurchaseModal(id, schedule) {
     document.getElementById('pSchedule').textContent    = schedule;
     document.getElementById('pUnitPrice').textContent   = '$' + UNIT_PRICE.toLocaleString();
     generateSeatMap();
+    selectedFoods = []; // Limpiar carrito anterior
+    renderModalFoods(); // Cargar comidas en el modal
+    renderCartList();   // Limpiar vista del carrito
     updatePurchaseTotal();
+
   }
 
   document.getElementById('purchaseModal').classList.add('open');
@@ -597,7 +673,7 @@ async function confirmPurchase() {
         schedule:   selectedSchedule,
         format:     '2D',
         unit_price: UNIT_PRICE,
-        foods:      [],
+        foods:      selectedFoods.map(f => ({ food_id: f.food_id, quantity: f.quantity, unit_price: f.unit_price })), // <--- ENVIAR COMIDAS
         seats:      selectedSeats,
       },
     });
@@ -606,7 +682,6 @@ async function confirmPurchase() {
     closeMovieModal();
     showToast(`🎬 ¡Compra exitosa! +${result.points_earned} puntos`, 4000);
 
-    // Actualiza los puntos del usuario en sesión
     const updatedUser = await api('/api/auth/me');
     if (updatedUser) {
       const storage = localStorage.getItem('rsa_token') ? localStorage : sessionStorage;
@@ -640,7 +715,6 @@ function setupScrollSpy() {
       if (section.offsetTop <= middle) current = section;
     });
 
-    // Si llegamos al final de la página, activa la última sección
     const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
     if (atBottom) current = sections[sections.length - 1];
 
@@ -667,7 +741,6 @@ function setupScrollSpy() {
    EVENT LISTENERS
    ============================================================ */
 
-// Modales
 document.getElementById('closeMovieModal').addEventListener('click', closeMovieModal);
 document.getElementById('movieModalOverlay').addEventListener('click', closeMovieModal);
 document.getElementById('closePurchaseModal').addEventListener('click', closePurchaseModal);
@@ -676,10 +749,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeMovieModal(); closePurchaseModal(); }
 });
 
-// Compra
 document.getElementById('confirmPurchaseBtn').addEventListener('click', confirmPurchase);
 
-// Filtros de categoría
 document.querySelectorAll('.segmented-control button').forEach(btn => {
   btn.addEventListener('click', () => {
     activeFilter = btn.dataset.filter;
@@ -689,16 +760,13 @@ document.querySelectorAll('.segmented-control button').forEach(btn => {
   });
 });
 
-// Búsqueda de películas
 document.getElementById('movieSearch').addEventListener('input', renderMovies);
 
-// Cambio de ciudad
 document.getElementById('citySelect').addEventListener('change', function () {
   document.getElementById('currentCity').textContent = this.options[this.selectedIndex].text;
   loadVenues();
 });
 
-// Menú lateral (hamburguesa)
 document.getElementById('menuToggle').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('open');
@@ -708,14 +776,12 @@ document.getElementById('overlay').addEventListener('click', () => {
   document.getElementById('overlay').classList.remove('open');
 });
 
-// Scroll suave a secciones
 document.querySelectorAll('[data-scroll]').forEach(btn => {
   btn.addEventListener('click', () =>
     document.querySelector(btn.dataset.scroll).scrollIntoView({ behavior: 'smooth' })
   );
 });
 
-// Cierra el sidebar al hacer clic en un enlace de navegación
 document.querySelectorAll('.nav-list a').forEach(link => {
   link.addEventListener('click', () => {
     document.querySelectorAll('.nav-list a').forEach(l => l.classList.remove('active'));
@@ -742,4 +808,3 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
   setupScrollSpy();
 });
-

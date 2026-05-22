@@ -20,7 +20,7 @@ router.post('/', auth, adminOnly, uploadPoster.single('poster'), async (req, res
   try {
     const data = { ...req.body };
 
-    if (req.file) data.poster = `/uploads/posters/${req.file.filename}`;
+    if (req.file) data.poster = req.file.path; // Cloudinary devuelve la URL completa en req.file.path
 
     if (typeof data.formats === 'string') {
       try { data.formats = JSON.parse(data.formats); }

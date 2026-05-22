@@ -228,7 +228,9 @@ router.post('/', auth, async (req, res) => {
 
     const finalSeats = seats || [];
     const qty = finalSeats.length > 0 ? finalSeats.length : (quantity || 1);
-    const total = qty * unit_price;
+    const ticketsTotal = qty * unit_price;
+    const foodsTotal = (foods || []).reduce((sum, f) => sum + ((f.quantity || 1) * (f.unit_price || 0)), 0);
+    const total = ticketsTotal + foodsTotal;
 
     const sale = await Sale.create({
       user: req.user._id,

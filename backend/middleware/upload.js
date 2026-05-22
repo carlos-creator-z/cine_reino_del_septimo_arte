@@ -1,33 +1,34 @@
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
-const path = require('path');
 
-// Crea una configuración de almacenamiento en disco para una subcarpeta específica.
-// Los archivos se guardan en /uploads/<subfolder>/ con un nombre único basado en timestamp.
-const createStorage = (subfolder) => {
-  return multer.diskStorage({
-    destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', subfolder)),
-    filename: (req, file, cb) => cb(null, `${subfolder}-${Date.now()}${path.extname(file.originalname)}`)
-  });
-};
-
-// Valida que el archivo subido sea una imagen permitida (jpg, jpeg, png, webp, gif).
-const fileFilter = (req, file, cb) => {
-  if (/\.(jpg|jpeg|png|webp|gif)$/i.test(path.extname(file.originalname))) cb(null, true);
-  else cb(new Error('Solo se permiten imágenes'), false);
-};
-
-// Instancia de multer para subir pósters de películas y próximos estrenos. Límite: 5MB.
-const uploadPoster = multer({
-  storage: createStorage('posters'),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter
+// Configurar Cloudinary con las variables de tu archivo .env
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Instancia de multer para subir imágenes de productos de comida. Límite: 5MB.
-const uploadFood = multer({
-  storage: createStorage('foods'),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter
+// Configurar dónde se guardan los Pósters de las películas
+const posterStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'cine_posters', // Nombre de la carpeta que se creará en Cloudinary
+    allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
+  }
 });
+
+// Configurar dónde se guardan las fotos de las Comidas
+const foodStorage = new CloudinaryStorage({
+  cloudiny: cloudinary,
+  params: {
+    folder: 'cine_foods', // Nombre de la carpeta para comidas en Cloudinary
+    allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
+  }
+});
+
+// Crear los middlewares de subida
+const uploadPoster = multer({ storage: posterStorage });
+const uploadFood = multer({ storage: foodStorage });
 
 module.exports = { uploadPoster, uploadFood };

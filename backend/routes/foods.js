@@ -37,7 +37,7 @@ router.put('/:id', auth, adminOnly, uploadFood.single('image'), async (req, res)
 
     const d = { ...req.body };
     if (d.price) d.price = parseFloat(d.price);
-    if (req.file) d.image = `/uploads/foods/${req.file.filename}`;
+    if (req.file) data.image = req.file.path; // Cloudinary devuelve la URL completa en req.file.path
     else if (!d.image) d.image = ex.image;
 
     res.json(await Food.findByIdAndUpdate(req.params.id, d, { returnDocument: 'after' }));

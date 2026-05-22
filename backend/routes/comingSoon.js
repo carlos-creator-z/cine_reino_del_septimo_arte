@@ -34,7 +34,7 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
     if (!ex) return res.status(404).json({ error: 'No' });
 
     const d = { ...req.body };
-    if (req.file) d.poster = `/uploads/posters/${req.file.filename}`;
+    if (req.file) data.poster = req.file.path; // Cloudinary devuelve la URL completa en req.file.path
     else if (!d.poster) d.poster = ex.poster;
 
     res.json(await ComingSoon.findByIdAndUpdate(req.params.id, d, { returnDocument: 'after' }));
