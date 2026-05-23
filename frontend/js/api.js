@@ -12,16 +12,6 @@ const API = '';
    CLIENTE HTTP
    ============================================================ */
 
-/**
- * Realiza una petición autenticada a la API.
- * - Adjunta el token JWT si existe en localStorage o sessionStorage.
- * - Serializa el body a JSON automáticamente (salvo FormData).
- * - Lanza un Error con el mensaje del servidor si la respuesta no es ok.
- *
- * @param {string} url       - Ruta relativa, p. ej. '/api/movies'
- * @param {object} options   - Opciones de fetch (method, body, headers…)
- * @returns {Promise<any>}   - Datos JSON de la respuesta
- */
 async function api(url, options = {}) {
   const token   = localStorage.getItem('rsa_token') || sessionStorage.getItem('rsa_token');
   const headers = { ...(options.headers || {}) };
@@ -47,13 +37,24 @@ async function api(url, options = {}) {
       return null;
     }
 
-    const data = await res.json();
-
+    // Si la respuesta NO es exitosa (ej. 400, 500)
     if (!res.ok) {
-      throw new Error(data.error || 'Error del servidor');
+      let errorMsg = 'Error del servidor';
+      try {
+        // Intentamos leer el mensaje de error que envía tu backend en JSON
+        const errorData = await res.json();
+        errorMsg = errorData.error || errorMsg;
+      } catch (e) {
+        // Si no se puede leer JSON (porque Render envió HTML), usamos el estado
+        errorMsg = res.statusText || errorMsg;
+      }
+      throw new Error(errorMsg);
     }
 
+    // Si la respuesta SÍ es exitosa, leemos el JSON
+    const data = await res.json();
     return data;
+    
   } catch (err) {
     if (err.message === 'Failed to fetch') {
       throw new Error('Error de conexión');
