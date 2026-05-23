@@ -20,7 +20,7 @@ router.post('/', auth, adminOnly, uploadPoster.single('poster'), async (req, res
   try {
     const data = { ...req.body };
 
-    if (req.file) data.poster = req.file.path; // Cloudinary devuelve la URL completa en req.file.path
+    if (req.file) data.poster = req.file.path; // <--- CORRECTO: Cloudinary devuelve la URL completa aquí
 
     if (typeof data.formats === 'string') {
       try { data.formats = JSON.parse(data.formats); }
@@ -47,7 +47,8 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
 
     const data = { ...req.body };
 
-    if (req.file) data.poster = `/uploads/posters/${req.file.filename}`;
+    // <--- AQUÍ ESTABA EL ERROR: Decía `/uploads/posters/${req.file.filename}`
+    if (req.file) data.poster = req.file.path; // <--- CORREGIDO
     else if (!data.poster) data.poster = existing.poster;
 
     if (typeof data.formats === 'string') {
