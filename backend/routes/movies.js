@@ -4,7 +4,7 @@ const { auth, adminOnly } = require('../middleware/auth');
 const { uploadPoster } = require('../middleware/upload');
 const router = express.Router();
 
-// Devuelve todas las películas activas, ordenadas de más reciente a más antigua.
+// Devuelve todas las películas activas
 router.get('/', async (req, res) => {
   try {
     res.json(await Movie.find({ active: true }).sort({ createdAt: -1 }));
@@ -13,14 +13,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Crea una nueva película. Si se sube un póster, guarda su ruta.
-// Parsea formats y schedules desde JSON o string separado por comas.
-// Solo accesible para administradores autenticados.
+// Crear película
 router.post('/', auth, adminOnly, uploadPoster.single('poster'), async (req, res) => {
   try {
     const data = { ...req.body };
 
-    if (req.file) data.poster = req.file.path; // <--- CORRECTO: Cloudinary devuelve la URL completa aquí
+    // Cloudinary devuelve la URL completa en req.file.path
+    if (req.file) data.poster = req.file.path; 
 
     if (typeof data.formats === 'string') {
       try { data.formats = JSON.parse(data.formats); }
@@ -33,13 +32,13 @@ router.post('/', auth, adminOnly, uploadPoster.single('poster'), async (req, res
 
     res.status(201).json(await Movie.create(data));
   } catch (error) {
+    // Este console.log es VITAL para ver el error real en Render
+    console.error('ERROR AL CREAR PELICULA:', error);
     res.status(400).json({ error: 'Error al crear película: ' + error.message });
   }
 });
 
-// Actualiza una película por ID. Conserva el póster existente si no se sube uno nuevo.
-// Parsea formats y schedules igual que en el POST.
-// Solo accesible para administradores autenticados.
+// Actualizar película
 router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, res) => {
   try {
     const existing = await Movie.findById(req.params.id);
@@ -47,8 +46,8 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
 
     const data = { ...req.body };
 
-    // <--- AQUÍ ESTABA EL ERROR: Decía `/uploads/posters/${req.file.filename}`
-    if (req.file) data.poster = req.file.path; // <--- CORREGIDO
+    // Cloudinary devuelve la URL completa en req.file.path
+    if (req.file) data.poster = req.file.path; 
     else if (!data.poster) data.poster = existing.poster;
 
     if (typeof data.formats === 'string') {
@@ -62,15 +61,14 @@ router.put('/:id', auth, adminOnly, uploadPoster.single('poster'), async (req, r
 
     res.json(await Movie.findByIdAndUpdate(req.params.id, data, { returnDocument: 'after', runValidators: true }));
   } catch (error) {
+    console.error('ERROR AL ACTUALIZAR PELICULA:', error);
     res.status(400).json({ error: 'Error al actualizar: ' + error.message });
   }
 });
 
-
-// Solo accesible para administradores autenticados.
+// Eliminar película permanentemente
 router.delete('/:id', auth, adminOnly, async (req, res) => {
   try {
-    // Cambiamos findByIdAndUpdate por findByIdAndDelete
     const m = await Movie.findByIdAndDelete(req.params.id);
     if (!m) return res.status(404).json({ error: 'No encontrada' });
     res.json({ message: 'Eliminada permanentemente' });
