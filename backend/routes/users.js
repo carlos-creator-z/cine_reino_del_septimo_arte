@@ -22,7 +22,7 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'Rol inválido' });
     }
 
-    // NUEVA REGLA: Solo el súper admin puede asignar el rol 'admin'
+    // Solo el súper admin puede asignar el rol 'admin'
     const SUPER_ADMIN_EMAIL = 'admin@reino.com';
     if (role === 'admin' && req.user.email !== SUPER_ADMIN_EMAIL) {
       return res.status(403).json({ error: 'Solo el administrador principal puede asignar el rol de administrador' });
@@ -33,20 +33,18 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'No puedes remover tu propio rol de administrador' });
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id, 
-      { role }, 
-      { returnDocument: 'after', runValidators: true }
-    );
-
+    // CAMBIO CLAVE: Buscamos, modificamos y guardamos (más seguro que findByIdAndUpdate)
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    
+
+    user.role = role; // Cambiamos el rol
+    await user.save(); // Forzamos el guardado en la base de datos
+
     res.json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
-
 // Eliminar usuario
 router.delete('/:id', auth, adminOnly, async (req, res) => { 
   try { 
