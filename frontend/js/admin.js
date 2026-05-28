@@ -446,20 +446,31 @@ async function loadUsers() {
     const tbody = document.getElementById('tableUsers');
     tbody.textContent = '';
 
-    users
-      .filter(u => u.role !== 'admin')
-      .forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td data-label="Nombre">${u.name}</td>
-          <td data-label="Correo">${u.email}</td>
-          <td data-label="Rol">${u.role}</td>
-          <td data-label="Puntos">${u.points}</td>
-          <td data-label="Membresia">${u.membership}</td>
-          <td data-label="Acciones"><button type="button" class="btn-sm btn-delete" data-id="${u._id}">Eliminar</button></td>`;
-        tbody.appendChild(tr);
-      });
+    users.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td data-label="Nombre">${u.name}</td>
+        <td data-label="Correo">${u.email}</td>
+        <td data-label="Rol"><span class="status-tag">${u.role}</span></td>
+        <td data-label="Puntos">${u.points}</td>
+        <td data-label="Membresia">${u.membership}</td>
+        <td data-label="Acciones">
+          <button type="button" class="btn-sm btn-edit" data-id="${u._id}">Editar</button>
+          <button type="button" class="btn-sm btn-delete" data-id="${u._id}">Eliminar</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
 
+    // Listeners para Editar
+    tbody.querySelectorAll('.btn-edit').forEach(btn =>
+      btn.addEventListener('click', async () => {
+        const users = await api('/api/users');
+        const userToEdit = users.find(u => u._id === btn.dataset.id);
+        if (userToEdit) openUserModal(userToEdit);
+      })
+    );
+
+    // Listeners para Eliminar
     tbody.querySelectorAll('.btn-delete').forEach(btn =>
       btn.addEventListener('click', async () => {
         if (!confirm('¿Eliminar este usuario?')) return;
@@ -471,31 +482,59 @@ async function loadUsers() {
   } catch (e) { console.error(e); }
 }
 
-// ─── Ventas ───────────────────────────────────────────────────────────────────
-async function loadSales() {
-  try {
-    const sales = await api('/api/sales');
-    if (!sales) return;
+function openUserModal(user = null) {
+  document.getElementById('userId').value = user ? user._id : '';
+  document.getElementById('uName').value = user ? user.name : '';
+  document.getElementById('uEmail').value = user ? user.email : '';
+  document.getElementById('uRole').value = user ? user.role : 'user';
 
-    const tbody = document.getElementById('tableSales');
-    tbody.textContent = '';
+  // NUEVA REGLA: Bloquear opción de Admin si no es el súper admin
+  const currentUser = getUser(); // Obtenemos el usuario logueado
+  const roleSelect = document.getElementById('uRole');
+  const superAdminEmail = 'admin@reino.com';
 
-    sales.forEach(s => {
-      const date = new Date(s.createdAt).toLocaleDateString('es-CO');
-      const tr   = document.createElement('tr');
-      tr.innerHTML = `
-        <td data-label="Fecha">${date}</td>
-        <td data-label="Usuario">${s.user?.name   || 'N/A'}</td>
-        <td data-label="Pelicula">${s.movie?.title || 'N/A'}</td>
-        <td data-label="Horario">${s.schedule}</td>
-        <td data-label="Cantidad">${s.quantity}</td>
-        <td data-label="Total">${formatCurrency(s.total_price)}</td>
-        <td data-label="Estado"><span class="status-tag">${s.status}</span></td>`;
-      tbody.appendChild(tr);
-    });
-  } catch (e) { console.error(e); }
+  // Habilitamos todas las opciones primero (por si abres el modal de varios usuarios)
+  Array.from(roleSelect.options).forEach(opt => opt.disabled = false);
+
+  // Si el logueado NO es el súper admin, bloqueamos la opción 'admin'
+  if (currentUser.email !== superAdminEmail) {
+    const adminOption = Array.from(roleSelect.options).find(opt => opt.value === 'admin');
+    if (adminOption) {
+      adminOption.disabled = true;
+      adminOption.textContent = 'Admin (Restringido)'; // Texto para que sepan que no pueden
+    }
+  } else {
+    // Si ES el súper admin, nos aseguramos de que el texto sea normal
+    const adminOption = Array.from(roleSelect.options).find(opt => opt.value === 'admin');
+    if (adminOption) adminOption.textContent = 'Administrador';
+  }
+
+  openModal('userModal');
 }
 
+// Cerrar modal
+['closeUserModal', 'userModalOverlay', 'cancelUser'].forEach(id =>
+  document.getElementById(id).addEventListener('click', () => closeModal('userModal'))
+);
+
+// Guardar cambios de rol
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('userId').value;
+  const newRole = document.getElementById('uRole').value;
+
+  try {
+    await api(`/api/users/${id}`, { 
+      method: 'PUT', 
+      body: { role: newRole } 
+    });
+    showToast('Rol actualizado', 2000);
+    closeModal('userModal');
+    loadUsers(); // Refrescar la tabla
+  } catch (e) { 
+    showToast('Error: ' + e.message, 3000); 
+  }
+});
 // ─── Escáner QR ────────────────────────────────────────────────────────────────
 let html5QrCode = null;
 
