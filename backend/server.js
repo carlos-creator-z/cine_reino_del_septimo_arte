@@ -39,20 +39,7 @@ app.use('/api/users', userRoutes);
 // Ciudades
 app.get('/api/cities', (req, res) => {
   res.json([
-    "Bogota","Medellin","Cali","Barranquilla","Cartagena","Bucaramanga","Pereira","Manizales",
-    "Armenia","Ibague","Neiva","Villavicencio","Santa Marta","Monteria","Sincelejo","Valledupar",
-    "Riohacha","Tunja","Popayan","Pasto","Cucuta","Floridablanca","Soacha","Chia","Zipaquira",
-    "Facatativa","Mosquera","Funza","Madrid","Cajica","Fusagasuga","Girardot","Sogamoso",
-    "Duitama","Yopal","Arauca","Leticia","Mocoa","San Andres","Quibdo","Buenaventura",
-    "Palmira","Buga","Tulua","Jamundi","Yumbo","Cartago","Dosquebradas","Santa Rosa de Cabal",
-    "Envigado","Sabaneta","Itagui","Bello","Rionegro","Apartado","Turbo","Marinilla","La Ceja",
-    "Girardota","Copacabana","Caldas","La Estrella","Caucasia","Magangue","Turbaco","Malambo",
-    "Soledad","Sabanalarga","Puerto Colombia","Galapa","Lorica","Cerete","Sahagun","Corozal",
-    "Cienaga","Fundacion","Aguachica","Ocana","Pamplona","Villa del Rosario","Piedecuesta",
-    "Giron","Barrancabermeja","San Gil","Socorro","Garzon","Pitalito","La Plata",
-    "Espinal","Melgar","Honda","Mariquita","Acacias","Granada","Puerto Lopez","San Jose del Guaviare",
-    "Florencia","Puerto Asis","Tumaco","Ipiales","Sibundoy","Santander de Quilichao","Puerto Tejada",
-    "Calarca","Montenegro","Quimbaya","La Tebaida"
+    "Bogota","Medellin","Cali","Barranquilla" , "ibague"
   ]);
 });
 
